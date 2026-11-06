@@ -17,6 +17,7 @@ import {
   WifiOff,
   Bookmark,
 } from 'lucide-react';
+import { LIVE_VIDEO_SOURCE } from '../../data/mockLiveCameras';
 import { usePlays } from '../../context/PlaysContext';
 import { useToast } from '../../context/ToastContext';
 import { ROUTES } from '../../routes/paths';
@@ -231,7 +232,8 @@ export const LivePlayer: React.FC<LivePlayerProps> = ({
       timeSlot: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
       isLiveMoment: true,
       thumbnailUrl: camera.posterUrl,
-      videoSrc: camera.videoUrl,
+      // Mientras no exista el corte de clips, la jugada usa el video de demostración y no el flujo en vivo.
+      videoSrc: LIVE_VIDEO_SOURCE,
     };
 
     setMarkedMoment(moment);
@@ -309,7 +311,8 @@ export const LivePlayer: React.FC<LivePlayerProps> = ({
     dateLabel: 'Hoy · En vivo',
     timeSlot: 'En vivo',
     status: 'available',
-    videoSrc: camera.videoUrl,
+    // Al compartir no se debe apuntar al flujo en vivo.
+    videoSrc: LIVE_VIDEO_SOURCE,
     poster: camera.posterUrl,
     duration: 60,
     recordedAt: new Date().toISOString(),
@@ -399,7 +402,7 @@ export const LivePlayer: React.FC<LivePlayerProps> = ({
               src={camera.videoUrl}
               poster={camera.posterUrl}
               autoPlay
-              loop
+              loop={camera.isDemo}
               muted={isMuted}
               playsInline
               controls={false}
@@ -581,14 +584,16 @@ export const LivePlayer: React.FC<LivePlayerProps> = ({
 
           {/* Right badge: Demo badge with discreet disclaimer */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="text-right hidden md:block">
-              <span className="block font-mono text-[10px] text-volt tracking-wider uppercase font-semibold">
-                Transmisión en vivo de demostración
-              </span>
-              <span className="block text-[10px] text-pitch-muted">
-                Fuente simulada con video de prueba
-              </span>
-            </div>
+            {camera.isDemo && (
+              <div className="text-right hidden md:block">
+                <span className="block font-mono text-[10px] text-volt tracking-wider uppercase font-semibold">
+                  Transmisión en vivo de demostración
+                </span>
+                <span className="block text-[10px] text-pitch-muted">
+                  Fuente simulada con video de prueba
+                </span>
+              </div>
+            )}
 
             {/* Plays Panel Toggle Button */}
             <button

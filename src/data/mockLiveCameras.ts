@@ -25,10 +25,11 @@ export const MOCK_LIVE_CAMERAS: LiveCamera[] = [
     sport: 'Fútbol 5',
     location: 'Palermo, CABA',
     status: 'live',
-    videoUrl: LIVE_VIDEO_SOURCE,
+    // Cámara real: el video llega por el backend (GET /api/live/:cameraId/stream).
+    videoUrl: '/api/live/estacion-norte-c1/stream',
     posterUrl: DEFAULT_LIVE_POSTER,
     lastUpdated: '2026-11-06T08:24:00Z',
-    isDemo: true,
+    isDemo: false,
     visualVariant: 'soccer-turf',
   },
   {
