@@ -4,15 +4,17 @@ import { playsService } from '../services/playsService';
 import { SavedPlay, SavePlayInput } from '../types/play';
 import { useAuth } from './AuthContext';
 
-interface PlaysContextValue {
+export interface PlaysContextValue {
   savedPlays: SavedPlay[];
   savedMatchIds: string[];
   isLoading: boolean;
-  savePlay: (input: SavePlayInput) => Promise<SavedPlay>;
+  savePlay: (input: SavePlayInput, options?: { forceError?: boolean }) => Promise<SavedPlay>;
+  updatePlay: (playId: string, updates: Partial<SavedPlay>) => Promise<SavedPlay | null>;
   deletePlay: (playId: string) => Promise<boolean>;
   toggleSaveMatch: (matchId: string) => Promise<boolean>;
   isMatchSaved: (matchId: string) => boolean;
   refreshPlays: () => Promise<void>;
+  assignAllPlaysToUser: () => Promise<void>;
 }
 
 const PlaysContext = createContext<PlaysContextValue | undefined>(undefined);
@@ -38,10 +40,24 @@ export const PlaysProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     fetchPlaysAndMatches();
   }, [user]);
 
-  const savePlay = async (input: SavePlayInput): Promise<SavedPlay> => {
-    const play = await playsService.savePlay(input, user?.id);
+  const savePlay = async (
+    input: SavePlayInput,
+    options?: { forceError?: boolean }
+  ): Promise<SavedPlay> => {
+    const play = await playsService.savePlay(input, user?.id, options);
     setSavedPlays((prev) => [play, ...prev.filter((p) => p.id !== play.id)]);
     return play;
+  };
+
+  const updatePlay = async (
+    playId: string,
+    updates: Partial<SavedPlay>
+  ): Promise<SavedPlay | null> => {
+    const updated = await playsService.updatePlay(playId, updates);
+    if (updated) {
+      setSavedPlays((prev) => prev.map((p) => (p.id === playId ? updated : p)));
+    }
+    return updated;
   };
 
   const deletePlay = async (playId: string): Promise<boolean> => {
@@ -50,6 +66,12 @@ export const PlaysProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setSavedPlays((prev) => prev.filter((p) => p.id !== playId));
     }
     return success;
+  };
+
+  const assignAllPlaysToUser = async (): Promise<void> => {
+    if (!user) return;
+    await playsService.assignPlaysToUser(user.id);
+    await fetchPlaysAndMatches();
   };
 
   const toggleSaveMatch = async (matchId: string): Promise<boolean> => {
@@ -69,10 +91,12 @@ export const PlaysProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         savedMatchIds,
         isLoading,
         savePlay,
+        updatePlay,
         deletePlay,
         toggleSaveMatch,
         isMatchSaved,
         refreshPlays: fetchPlaysAndMatches,
+        assignAllPlaysToUser,
       }}
     >
       {children}

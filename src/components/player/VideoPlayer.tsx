@@ -17,11 +17,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePlays } from '../../context/PlaysContext';
+import { useToast } from '../../context/ToastContext';
 import { ROUTES } from '../../routes/paths';
 import { Match } from '../../types/match';
-import { SavedPlay } from '../../types/play';
+import { SavedPlay, SavePlayInput } from '../../types/play';
 import { formatVideoTime } from '../../utils/sharing';
 import { AccessEmailModal } from '../auth/AccessEmailModal';
+import { PlaysPanel } from '../plays/PlaysPanel';
+import { SaveButtonVisualState, SavePlayButton } from '../plays/SavePlayButton';
+import { SavePlaySheet } from '../plays/SavePlaySheet';
 import { ShareModal } from '../sharing/ShareModal';
 import { Button } from '../ui/Button';
 
@@ -36,7 +40,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const navigate = useNavigate();
   const { authMode, user } = useAuth();
-  const { savePlay } = usePlays();
+  const { savedPlays, savePlay, deletePlay } = usePlays();
+  const { showToast } = useToast();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -49,19 +54,33 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [controlsVisible, setControlsVisible] = useState<boolean>(true);
 
+  // Modals & Panels state
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [activeSharePlay, setActiveSharePlay] = useState<SavedPlay | null>(null);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState<boolean>(false);
-  const [savedToast, setSavedToast] = useState<{
-    visible: boolean;
-    play: SavedPlay | null;
-    timestampText: string;
-  }>({
-    visible: false,
-    play: null,
-    timestampText: '',
-  });
+  const [isPlaysPanelOpen, setIsPlaysPanelOpen] = useState<boolean>(false);
+  const [isSaveSheetOpen, setIsSaveSheetOpen] = useState<boolean>(false);
+
+  // Marked moment data for the current capture session
+  const [markedMoment, setMarkedMoment] = useState<{
+    timestamp: number;
+    timestampLabel: string;
+    matchId: string;
+    clubName: string;
+    courtName: string;
+    dateLabel: string;
+    timeSlot: string;
+    thumbnailUrl?: string;
+    videoSrc?: string;
+  } | null>(null);
+
+  const [saveButtonState, setSaveButtonState] = useState<SaveButtonVisualState>('idle');
+  const [lastSavedPlayId, setLastSavedPlayId] = useState<string | null>(null);
 
   const controlsTimeoutRef = useRef<number | null>(null);
+
+  // Filter plays for current match
+  const matchPlays = savedPlays.filter((p) => p.matchId === match.id);
 
   // If highlighted play provided, seek video to its startTime
   useEffect(() => {
@@ -90,10 +109,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
-  // Keyboard navigation
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is inside an input/textarea
       if (
         document.activeElement?.tagName === 'INPUT' ||
         document.activeElement?.tagName === 'TEXTAREA' ||
@@ -102,33 +120,31 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         return;
       }
 
-      if (e.code === 'Space') {
+      if (e.key === ' ' || e.key === 'k') {
         e.preventDefault();
         togglePlay();
-      } else if (e.code === 'ArrowLeft') {
-        e.preventDefault();
-        seekRelative(-5);
-      } else if (e.code === 'ArrowRight') {
-        e.preventDefault();
-        seekRelative(5);
-      } else if (e.code === 'KeyM') {
-        e.preventDefault();
-        toggleMute();
-      } else if (e.code === 'KeyF') {
+      } else if (e.key === 'f') {
         e.preventDefault();
         toggleFullscreen();
+      } else if (e.key === 'm') {
+        e.preventDefault();
+        toggleMute();
+      } else if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        handleTriggerSavePlay();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, isMuted, volume]);
+  }, [isPlaying, isFullscreen, isMuted, currentTime]);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
+      setControlsVisible(true);
     } else {
       videoRef.current.play().catch(() => {});
       setIsPlaying(true);
@@ -136,33 +152,31 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    setCurrentTime(videoRef.current.currentTime);
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
   };
 
   const handleLoadedMetadata = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.duration && !isNaN(videoRef.current.duration)) {
-      setDuration(videoRef.current.duration);
-    }
-    if (highlightedPlay) {
-      videoRef.current.currentTime = highlightedPlay.startTime;
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration || match.duration || 60);
     }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(e.target.value);
-    setCurrentTime(newTime);
+    const time = parseFloat(e.target.value);
+    setCurrentTime(time);
     if (videoRef.current) {
-      videoRef.current.currentTime = newTime;
+      videoRef.current.currentTime = time;
     }
   };
 
   const seekRelative = (delta: number) => {
-    if (!videoRef.current) return;
-    const target = Math.min(Math.max(0, videoRef.current.currentTime + delta), duration);
-    videoRef.current.currentTime = target;
-    setCurrentTime(target);
+    if (videoRef.current) {
+      const target = Math.max(0, Math.min(duration, videoRef.current.currentTime + delta));
+      videoRef.current.currentTime = target;
+      setCurrentTime(target);
+    }
   };
 
   const toggleMute = () => {
@@ -170,7 +184,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (isMuted) {
       videoRef.current.muted = false;
       setIsMuted(false);
-      if (volume === 0) setVolume(0.5);
+      if (volume === 0) setVolume(0.8);
     } else {
       videoRef.current.muted = true;
       setIsMuted(true);
@@ -188,29 +202,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const toggleFullscreen = async () => {
-    const container = containerRef.current;
-    if (!container) return;
-
     try {
-      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
-        if (container.requestFullscreen) {
-          await container.requestFullscreen();
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen();
+      if (!isFullscreen) {
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
         } else if (videoRef.current && (videoRef.current as any).webkitEnterFullscreen) {
-          // Fallback for iOS Safari
           (videoRef.current as any).webkitEnterFullscreen();
         }
       } else {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
         }
       }
-    } catch (err) {
-      // Silently ignore fullscreen failures if rejected by browser
-    }
+    } catch (err) {}
   };
 
   const handleMouseMove = () => {
@@ -219,44 +223,106 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       window.clearTimeout(controlsTimeoutRef.current);
     }
     controlsTimeoutRef.current = window.setTimeout(() => {
-      if (isPlaying) {
+      if (isPlaying && !isSaveSheetOpen && !isPlaysPanelOpen && !isShareModalOpen) {
         setControlsVisible(false);
       }
-    }, 3200);
+    }, 3800);
   };
 
-  // Guardar jugada handler
-  const handleSavePlayClick = async () => {
-    if (authMode === 'guest') {
-      // User is not registered: prompt access modal
-      setIsAccessModalOpen(true);
-      return;
-    }
-
-    // Registered user flow
+  // --- SAVE PLAY FLOW (Prompt 5) ---
+  const handleTriggerSavePlay = () => {
+    // Crucial: Video KEEPS PLAYING (no pausing)
     const timestampSec = Math.floor(currentTime);
     const formatted = formatVideoTime(timestampSec);
 
-    const newPlay = await savePlay({
+    const moment = {
+      timestamp: timestampSec,
+      timestampLabel: formatted,
       matchId: match.id,
-      title: `Jugada en ${formatVideoTime(timestampSec)}`,
       clubName: match.clubName,
       courtName: match.courtName,
       dateLabel: match.dateLabel,
       timeSlot: match.timeSlot,
-      startTime: Math.max(0, timestampSec - 2),
-      endTime: timestampSec + 3,
+      thumbnailUrl: match.poster || '/assets/aistudio/ref_6fe9ff42.mp4',
+      videoSrc: match.videoSrc || '/assets/aistudio/ref_6fe9ff42.mp4',
+    };
+
+    setMarkedMoment(moment);
+    setSaveButtonState('marked');
+
+    // Show non-intrusive toast with "Deshacer"
+    showToast({
+      type: 'info',
+      title: '¡Momento marcado!',
+      message: `Registramos el momento en ${formatted}. El video sigue reproduciéndose.`,
+      action: {
+        label: 'Deshacer',
+        onClick: () => {
+          if (lastSavedPlayId) {
+            deletePlay(lastSavedPlayId);
+          }
+          setIsSaveSheetOpen(false);
+          setSaveButtonState('idle');
+          showToast({
+            type: 'info',
+            title: 'Jugada deshecha',
+            message: 'El momento marcado fue cancelado.',
+            durationMs: 2500,
+          });
+        },
+      },
+      durationMs: 5000,
     });
 
-    setSavedToast({
-      visible: true,
-      play: newPlay,
-      timestampText: formatted,
-    });
+    // Open configuration sheet
+    setIsSaveSheetOpen(true);
+  };
 
+  // User explicitly confirmed in the sheet
+  const handleSaveConfirmed = (play: SavedPlay) => {
+    setLastSavedPlayId(play.id);
+    setSaveButtonState('saved');
     setTimeout(() => {
-      setSavedToast((prev) => ({ ...prev, visible: false }));
-    }, 4500);
+      setSaveButtonState('idle');
+    }, 3500);
+  };
+
+  // User closed sheet without clicking save: save with defaults so play is never lost!
+  const handleSaveWithDefaultsAndClose = async (input: SavePlayInput) => {
+    try {
+      const play = await savePlay(input);
+      setLastSavedPlayId(play.id);
+      setIsSaveSheetOpen(false);
+      setSaveButtonState('saved');
+      showToast({
+        type: 'success',
+        title: 'Jugada guardada por defecto',
+        message: `Guardamos 20s en "${play.title}". Podés editarla en tu lista de jugadas.`,
+        durationMs: 4000,
+      });
+      setTimeout(() => setSaveButtonState('idle'), 3500);
+    } catch (err) {
+      setIsSaveSheetOpen(false);
+      setSaveButtonState('error');
+      setTimeout(() => setSaveButtonState('idle'), 3500);
+    }
+  };
+
+  const handlePlaySelected = (play: SavedPlay) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = play.startTime;
+      setCurrentTime(play.startTime);
+      if (!isPlaying) {
+        videoRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      }
+    }
+    setIsPlaysPanelOpen(false);
+  };
+
+  const handleShareSelected = (play: SavedPlay) => {
+    setActiveSharePlay(play);
+    setIsShareModalOpen(true);
   };
 
   const hasVideoSource = Boolean(match.videoSrc && match.status === 'available');
@@ -274,7 +340,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
-      {/* Video Element or High-Quality Architectural Poster Fallback */}
+      {/* Video Element */}
       <div className="absolute inset-0 flex items-center justify-center bg-pitch overflow-hidden">
         {hasVideoSource ? (
           <video
@@ -298,8 +364,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               {match.title}
             </h2>
             <p className="mt-2 text-sm sm:text-base text-pitch-muted max-w-md">
-              {match.statusMessage ||
-                'La grabación automática no está disponible para este horario.'}
+              {match.statusMessage || 'La grabación automática no está disponible para este horario.'}
             </p>
             <div className="mt-6 flex items-center gap-3">
               <Button
@@ -314,9 +379,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         )}
       </div>
 
-      {/* Top Header Bar with Context & Back Action */}
+      {/* Top Header Bar */}
       <div
-        className={`relative z-20 w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-200 ${
+        className={`relative z-20 w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-b from-black/85 via-black/40 to-transparent transition-opacity duration-200 ${
           controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -343,61 +408,38 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </div>
           </div>
 
-          {/* Quick status / profile link */}
-          <div className="flex items-center gap-2">
-            {highlightedPlay && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-volt text-volt-ink font-mono text-xs font-semibold">
-                <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Jugada destacada</span>
+          {/* Top Right Utilities: Plays Panel Badge Button & Profile */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Plays Panel Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsPlaysPanelOpen(true)}
+              aria-label={`Ver jugadas guardadas (${matchPlays.length})`}
+              className="min-h-[38px] px-3 rounded-lg bg-black/60 hover:bg-black/80 border border-white/15 text-xs font-semibold text-white inline-flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <Bookmark className="w-4 h-4 text-volt" aria-hidden="true" />
+              <span className="hidden sm:inline">Jugadas</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-volt text-volt-ink text-[11px] font-bold font-mono">
+                {matchPlays.length}
               </span>
-            )}
+            </button>
 
-            {authMode === 'registered' && (
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.PROFILE)}
-                aria-label="Ir a mi perfil con jugadas guardadas"
-                className="min-h-[36px] px-3 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <User className="w-3.5 h-3.5 text-volt" aria-hidden="true" />
-                <span className="hidden sm:inline">Mi perfil</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.PROFILE)}
+              aria-label="Ir a mi perfil"
+              className="min-w-[38px] min-h-[38px] px-2.5 rounded-lg bg-black/60 hover:bg-black/80 border border-white/15 text-xs font-semibold text-white inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <User className="w-4 h-4 text-white" aria-hidden="true" />
+              <span className="hidden md:inline">
+                {authMode === 'registered' && user ? user.name.split(' ')[0] : 'Perfil'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Floating Toast when a play is saved */}
-      {savedToast.visible && (
-        <div
-          role="status"
-          className="absolute top-20 left-1/2 -translate-x-1/2 z-30 max-w-sm w-[92%] p-3.5 rounded-xl bg-surface text-ink border border-line shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-4 duration-200"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-turf-soft flex items-center justify-center shrink-0">
-              <Check className="w-4 h-4 text-turf stroke-[2.5]" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-xs text-ink truncate">
-                ¡Jugada guardada en {savedToast.timestampText}!
-              </p>
-              <p className="text-[11px] text-ink-muted truncate">
-                Disponible en tu lista de jugadas
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.PROFILE)}
-            className="px-2.5 py-1.5 rounded-md bg-volt text-volt-ink text-xs font-semibold shrink-0 cursor-pointer hover:bg-volt-hover transition-colors"
-          >
-            Ver perfil
-          </button>
-        </div>
-      )}
-
-      {/* Center Big Play Pause indicator when paused manually */}
+      {/* Manual Pause Indicator */}
       {!isPlaying && hasVideoSource && (
         <button
           type="button"
@@ -409,14 +451,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </button>
       )}
 
+      {/* FLOATING ACTION: Prominent Main Save Button (Prompt 5) */}
+      <div
+        className={`absolute bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-30 transition-all duration-300 pointer-events-auto ${
+          controlsVisible ? 'opacity-100 scale-100' : 'opacity-85 scale-95'
+        }`}
+      >
+        <SavePlayButton
+          status={saveButtonState}
+          onClick={handleTriggerSavePlay}
+          className="shadow-2xl"
+        />
+      </div>
+
       {/* Bottom Controls Bar */}
       <div
-        className={`relative z-20 w-full px-4 sm:px-6 pb-4 sm:pb-6 pt-8 bg-gradient-to-t from-black/90 via-black/55 to-transparent transition-opacity duration-200 ${
+        className={`relative z-20 w-full px-4 sm:px-6 pb-4 sm:pb-6 pt-10 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-200 ${
           controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         <div className="max-w-6xl mx-auto space-y-3">
-          {/* Progress / Scrub Bar */}
+          {/* Progress Bar */}
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs font-medium text-white tabular-nums shrink-0">
               {formatVideoTime(currentTime)}
@@ -440,9 +495,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             </span>
           </div>
 
-          {/* Controls & Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            {/* Playback Controls: Play/Pause, Seek 5s, Volume */}
+          {/* Controls Bar Row */}
+          <div className="flex items-center justify-between gap-3 pt-1">
+            {/* Left Controls: Play/Pause, Seek 5s, Volume */}
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
@@ -493,26 +548,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </div>
             </div>
 
-            {/* Primary Actions: Guardar jugada + Compartir + Fullscreen */}
+            {/* Right Controls: Share + Fullscreen */}
             <div className="flex items-center gap-2 sm:gap-2.5">
-              <Button
-                variant="volt"
-                size="sm"
-                onClick={handleSavePlayClick}
-                className="font-semibold"
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSharePlay(null);
+                  setIsShareModalOpen(true);
+                }}
+                aria-label="Compartir partido completo"
+                className="min-h-[38px] px-3.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Bookmark className="w-4 h-4 shrink-0 fill-volt-ink" aria-hidden="true" />
-                <span>Guardar jugada</span>
-              </Button>
-
-              <Button
-                variant="darkSecondary"
-                size="sm"
-                onClick={() => setIsShareModalOpen(true)}
-              >
-                <Share2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>Compartir</span>
-              </Button>
+                <Share2 className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Compartir</span>
+              </button>
 
               <button
                 type="button"
@@ -531,12 +580,39 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       </div>
 
+      {/* Save Play Sheet / Bottom Sheet (Prompt 5) */}
+      <SavePlaySheet
+        isOpen={isSaveSheetOpen}
+        momentData={markedMoment}
+        onSaveConfirmed={handleSaveConfirmed}
+        onSaveWithDefaultsAndClose={handleSaveWithDefaultsAndClose}
+        onViewPlay={handlePlaySelected}
+        onSharePlay={handleShareSelected}
+        onClose={() => {
+          setIsSaveSheetOpen(false);
+          setSaveButtonState('idle');
+        }}
+      />
+
+      {/* Plays Panel Sidebar Modal */}
+      <PlaysPanel
+        isOpen={isPlaysPanelOpen}
+        onClose={() => setIsPlaysPanelOpen(false)}
+        onPlaySelected={handlePlaySelected}
+        onShareSelected={handleShareSelected}
+        onTriggerSavePlay={handleTriggerSavePlay}
+        matchId={match.id}
+      />
+
       {/* Share Modal */}
       <ShareModal
         isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
+        onClose={() => {
+          setIsShareModalOpen(false);
+          setActiveSharePlay(null);
+        }}
         match={match}
-        activePlay={highlightedPlay}
+        activePlay={activeSharePlay}
         currentTimestamp={currentTime}
       />
 
@@ -546,7 +622,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         onClose={() => setIsAccessModalOpen(false)}
         onSuccessRegistered={() => {
           setIsAccessModalOpen(false);
-          handleSavePlayClick();
         }}
       />
     </div>

@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { PlaysProvider } from './context/PlaysContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import { LandingPage } from './pages/LandingPage';
 import { LiveCamerasPage } from './pages/LiveCamerasPage';
 import { LivePlayerPage } from './pages/LivePlayerPage';
@@ -18,21 +19,23 @@ export function App() {
       <BrowserRouter>
         <AuthProvider>
           <PlaysProvider>
-          <Routes>
-            <Route path={ROUTES.HOME} element={<LandingPage />} />
-            <Route path={ROUTES.SEARCH} element={<SearchPage />} />
-            <Route path={ROUTES.LIVE} element={<LiveCamerasPage />} />
-            <Route path={ROUTES.LIVE_STREAM} element={<LivePlayerPage />} />
-            <Route path={ROUTES.MATCH} element={<PlayerPage mode="match" />} />
-            <Route path={ROUTES.PLAY} element={<PlayerPage mode="play" />} />
-            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </PlaysProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </ThemeProvider>
-);
+            <ToastProvider>
+              <Routes>
+                <Route path={ROUTES.HOME} element={<LandingPage />} />
+                <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+                <Route path={ROUTES.LIVE} element={<LiveCamerasPage />} />
+                <Route path={ROUTES.LIVE_STREAM} element={<LivePlayerPage />} />
+                <Route path={ROUTES.MATCH} element={<PlayerPage mode="match" />} />
+                <Route path={ROUTES.PLAY} element={<PlayerPage mode="play" />} />
+                <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </ToastProvider>
+          </PlaysProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 }
 
 export default App;

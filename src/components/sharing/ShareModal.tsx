@@ -19,6 +19,7 @@ import {
   copyTextToClipboard,
   formatVideoTime,
 } from '../../utils/sharing';
+import { useToast } from '../../context/ToastContext';
 import { Button } from '../ui/Button';
 
 interface ShareModalProps {
@@ -79,10 +80,18 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     playTimeFormatted
   );
 
+  const { showToast } = useToast();
+
   const handleCopy = async (type: 'match' | 'play', textToCopy: string) => {
     const success = await copyTextToClipboard(textToCopy);
     if (success) {
       setCopiedType(type);
+      showToast({
+        type: 'success',
+        title: '¡Link copiado!',
+        message: 'Enlace copiado al portapapeles para compartir.',
+        durationMs: 3000,
+      });
       setTimeout(() => setCopiedType(null), 2500);
     }
   };

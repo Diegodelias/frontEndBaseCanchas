@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   Check,
-  Clock,
+  ChevronDown,
+  Edit2,
+  Film,
   MapPin,
   Play,
   Plus,
@@ -15,22 +17,29 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePlays } from '../../context/PlaysContext';
+import { useToast } from '../../context/ToastContext';
 import { buildMatchPath, buildPlayPath, ROUTES } from '../../routes/paths';
 import { matchesService } from '../../services/matchesService';
 import { Match } from '../../types/match';
 import { SavedPlay } from '../../types/play';
-import { formatVideoTime } from '../../utils/sharing';
+import { DeletePlayDialog } from '../plays/DeletePlayDialog';
+import { PlayCard } from '../plays/PlayCard';
 import { ShareModal } from '../sharing/ShareModal';
 import { Button } from '../ui/Button';
 
 export const ProfileView: React.FC = () => {
   const navigate = useNavigate();
   const { user, authMode, setAuthMode } = useAuth();
-  const { savedPlays, savedMatchIds, deletePlay, toggleSaveMatch } = usePlays();
+  const { savedPlays, savedMatchIds, deletePlay, updatePlay, toggleSaveMatch } = usePlays();
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'plays' | 'matches'>('plays');
   const [loadedMatches, setLoadedMatches] = useState<Match[]>([]);
-  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [playToDelete, setPlayToDelete] = useState<SavedPlay | null>(null);
+
+  // Edit title modal state
+  const [editingPlay, setEditingPlay] = useState<SavedPlay | null>(null);
+  const [editingTitleText, setEditingTitleText] = useState('');
 
   // Sharing state
   const [shareTarget, setShareTarget] = useState<{
@@ -47,16 +56,13 @@ export const ProfileView: React.FC = () => {
         setLoadedMatches([]);
         return;
       }
-      setIsLoadingMatches(true);
       try {
         const matches = await matchesService.getSavedMatches(savedMatchIds);
         if (!cancelled) {
           setLoadedMatches(matches);
         }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingMatches(false);
-        }
+      } catch (err) {
+        console.warn('Could not load saved matches:', err);
       }
     }
 
@@ -66,16 +72,70 @@ export const ProfileView: React.FC = () => {
     };
   }, [savedMatchIds]);
 
-  const handleDeletePlay = async (playId: string) => {
-    await deletePlay(playId);
+  // Group plays by month (e.g. "NOVIEMBRE 2026")
+  const groupedPlays = React.useMemo(() => {
+    const groups: Record<string, SavedPlay[]> = {};
+
+    savedPlays.forEach((play) => {
+      const date = new Date(play.createdAt || Date.now());
+      const monthYear = date
+        .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+        .toUpperCase();
+      const groupKey = monthYear || 'NOVIEMBRE 2026';
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(play);
+    });
+
+    return groups;
+  }, [savedPlays]);
+
+  // Calculate unique matches count
+  const uniqueMatchCount = React.useMemo(() => {
+    const ids = new Set(savedPlays.map((p) => p.matchId));
+    return ids.size;
+  }, [savedPlays]);
+
+  const handleDeleteConfirm = async () => {
+    if (!playToDelete) return;
+    const title = playToDelete.title;
+    await deletePlay(playToDelete.id);
+    setPlayToDelete(null);
+    showToast({
+      type: 'info',
+      title: 'Jugada eliminada',
+      message: `"${title}" fue eliminada de tu perfil.`,
+      durationMs: 3000,
+    });
   };
 
-  const handleRemoveSavedMatch = async (matchId: string) => {
-    await toggleSaveMatch(matchId);
+  const handleStartEdit = (play: SavedPlay) => {
+    setEditingPlay(play);
+    setEditingTitleText(play.title);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPlay) return;
+    const trimmed = editingTitleText.trim();
+    if (trimmed && trimmed !== editingPlay.title) {
+      await updatePlay(editingPlay.id, { title: trimmed });
+      showToast({
+        type: 'success',
+        title: 'Nombre actualizado',
+        message: `La jugada ahora se llama "${trimmed}".`,
+        durationMs: 2500,
+      });
+    }
+    setEditingPlay(null);
+  };
+
+  const handlePlayCardPlay = (play: SavedPlay) => {
+    navigate(buildPlayPath(play.id));
   };
 
   const handleSharePlay = (play: SavedPlay) => {
-    // Find or synthesize match for sharing
     const match = loadedMatches.find((m) => m.id === play.matchId) || {
       id: play.matchId,
       title: play.title,
@@ -100,7 +160,7 @@ export const ProfileView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* User Header Profile Card */}
       <div className="bg-surface border border-line rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xs">
         <div className="flex items-center gap-4 sm:gap-5">
@@ -122,11 +182,14 @@ export const ProfileView: React.FC = () => {
             </div>
 
             <p className="mt-1 text-sm text-ink-muted">
-              {user?.email || 'Sin sesión activa (Modo Invitado)'}
+              {user?.email || 'Sin sesión activa (Modo Invitado · Guardado local)'}
             </p>
 
-            <div className="mt-2.5 flex items-center gap-4 text-xs font-mono text-ink-muted">
-              <span>{savedPlays.length} jugadas guardadas</span>
+            <div className="mt-2.5 flex items-center gap-3 text-xs font-mono text-ink-muted">
+              <span className="font-semibold text-ink">
+                {savedPlays.length} {savedPlays.length === 1 ? 'jugada' : 'jugadas'} en {uniqueMatchCount}{' '}
+                {uniqueMatchCount === 1 ? 'partido' : 'partidos'}
+              </span>
               <span aria-hidden="true">·</span>
               <span>{savedMatchIds.length} partidos guardados</span>
             </div>
@@ -150,7 +213,7 @@ export const ProfileView: React.FC = () => {
               onClick={() => setAuthMode('registered')}
             >
               <User className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span>Activar modo registrado</span>
+              <span>Simular usuario registrado</span>
             </Button>
           ) : (
             <Button
@@ -164,8 +227,8 @@ export const ProfileView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs Switcher: Jugadas guardadas vs Partidos guardados */}
-      <div className="mt-8 border-b border-line flex items-center gap-6">
+      {/* Tabs Switcher: Mis jugadas (Main) vs Partidos guardados */}
+      <div className="border-b border-line flex items-center gap-6">
         <button
           type="button"
           onClick={() => setActiveTab('plays')}
@@ -176,7 +239,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <Zap className="w-4 h-4 text-turf shrink-0" aria-hidden="true" />
-          <span>Mis jugadas guardadas ({savedPlays.length})</span>
+          <span>Mis jugadas ({savedPlays.length})</span>
         </button>
 
         <button
@@ -189,167 +252,117 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <Video className="w-4 h-4 text-turf shrink-0" aria-hidden="true" />
-          <span>Partidos guardados ({savedMatchIds.length})</span>
+          <span>Partidos completos ({savedMatchIds.length})</span>
         </button>
       </div>
 
-      {/* TAB 1: Plays List */}
+      {/* TAB 1: Mis Jugadas (Primary content, matching reference 8_cac3471b.png) */}
       {activeTab === 'plays' && (
-        <div className="mt-6">
+        <div className="space-y-8">
           {savedPlays.length === 0 ? (
-            <div className="p-8 sm:p-12 rounded-xl bg-surface border border-line text-center max-w-lg mx-auto">
-              <div className="w-12 h-12 rounded-xl bg-surface-muted text-ink-muted flex items-center justify-center mx-auto mb-3">
-                <Zap className="w-6 h-6" aria-hidden="true" />
+            /* Empty State */
+            <div className="p-8 sm:p-14 rounded-2xl bg-surface border border-line text-center max-w-lg mx-auto space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-surface-muted text-ink-muted flex items-center justify-center mx-auto">
+                <Film className="w-8 h-8" aria-hidden="true" />
               </div>
-              <h2 className="font-display text-2xl font-bold text-ink">
-                Todavía no tenés jugadas guardadas
-              </h2>
-              <p className="mt-2 text-sm text-ink-muted leading-relaxed">
-                Cuando estés mirando un partido en el reproductor, hacé clic en{' '}
-                <strong>Guardar jugada</strong> para recortar tus mejores momentos y compartirlos.
-              </p>
-              <div className="mt-6">
-                <Button
-                  variant="volt"
-                  onClick={() => navigate(ROUTES.SEARCH)}
-                >
-                  Ir a buscar un partido
+              <div>
+                <h2 className="font-display text-2xl font-bold text-ink">
+                  Todavía no tenés jugadas guardadas
+                </h2>
+                <p className="mt-2 text-sm text-ink-muted leading-relaxed">
+                  Cuando estés mirando un partido o una cancha en vivo, tocá{' '}
+                  <strong className="text-ink">Guardar jugada</strong> para marcar los mejores 20 segundos y compartirlos con tu equipo.
+                </p>
+              </div>
+              <div className="pt-2">
+                <Button variant="volt" size="md" onClick={() => navigate(ROUTES.SEARCH)}>
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  <span>Buscar un partido para ver</span>
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {savedPlays.map((play) => (
-                <article
-                  key={play.id}
-                  className="bg-surface border border-line rounded-xl overflow-hidden flex flex-col justify-between hover:border-line-strong transition-colors"
-                >
-                  <div className="p-5">
-                    {/* Timestamp badge and court info */}
-                    <div className="flex items-center justify-between gap-2 text-xs">
-                      <span className="font-mono px-2 py-0.5 rounded bg-turf-soft text-turf-ink font-semibold tabular-nums">
-                        Minuto {formatVideoTime(play.startTime)}
-                      </span>
-                      <span className="text-ink-muted font-medium">
-                        {play.timeSlot} hs
-                      </span>
-                    </div>
+            /* Grouped by month list */
+            Object.entries(groupedPlays).map(([monthLabel, plays]) => (
+              <section key={monthLabel} className="space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-line">
+                  <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-ink-muted">
+                    {monthLabel}
+                  </h2>
+                  <span className="font-mono text-xs text-ink-muted">
+                    {plays.length} {plays.length === 1 ? 'jugada' : 'jugadas'}
+                  </span>
+                </div>
 
-                    <h3 className="mt-2.5 font-display text-xl font-bold tracking-tight text-ink leading-snug">
-                      {play.title}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-ink-muted flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-turf shrink-0" aria-hidden="true" />
-                      <span>{play.clubName}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{play.courtName}</span>
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-canvas border-t border-line flex items-center justify-between gap-2">
-                    <Button
-                      variant="volt"
-                      size="sm"
-                      onClick={() => navigate(buildPlayPath(play.id))}
-                    >
-                      <Play className="w-3.5 h-3.5 fill-volt-ink" aria-hidden="true" />
-                      <span>Reproducir</span>
-                    </Button>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleSharePlay(play)}
-                        aria-label={`Compartir jugada: ${play.title}`}
-                        className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg border border-line text-ink-muted hover:text-ink hover:bg-surface transition-colors cursor-pointer"
-                      >
-                        <Share2 className="w-4 h-4" aria-hidden="true" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePlay(play.id)}
-                        aria-label={`Eliminar jugada: ${play.title}`}
-                        className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg border border-line text-alert hover:bg-alert-soft transition-colors cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {plays.map((play) => (
+                    <PlayCard
+                      key={play.id}
+                      play={play}
+                      layout="profile"
+                      onPlay={handlePlayCardPlay}
+                      onShare={handleSharePlay}
+                      onDelete={(p) => setPlayToDelete(p)}
+                      onEditTitle={handleStartEdit}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))
           )}
         </div>
       )}
 
-      {/* TAB 2: Matches List */}
+      {/* TAB 2: Partidos Guardados */}
       {activeTab === 'matches' && (
-        <div className="mt-6">
+        <div className="space-y-6">
           {loadedMatches.length === 0 ? (
-            <div className="p-8 sm:p-12 rounded-xl bg-surface border border-line text-center max-w-lg mx-auto">
-              <div className="w-12 h-12 rounded-xl bg-surface-muted text-ink-muted flex items-center justify-center mx-auto mb-3">
-                <Video className="w-6 h-6" aria-hidden="true" />
+            <div className="p-8 sm:p-14 rounded-2xl bg-surface border border-line text-center max-w-lg mx-auto space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-surface-muted text-ink-muted flex items-center justify-center mx-auto">
+                <Video className="w-8 h-8" aria-hidden="true" />
               </div>
               <h2 className="font-display text-2xl font-bold text-ink">
                 No tenés partidos guardados
               </h2>
-              <p className="mt-2 text-sm text-ink-muted leading-relaxed">
-                Podés guardar partidos completos para volver a mirarlos o compartirlos con tu equipo cuando quieras.
+              <p className="text-sm text-ink-muted">
+                Podés guardar partidos completos desde los resultados de búsqueda para volver a verlos cuando quieras.
               </p>
-              <div className="mt-6">
-                <Button
-                  variant="volt"
-                  onClick={() => navigate(ROUTES.SEARCH)}
-                >
-                  Buscar partidos
-                </Button>
-              </div>
+              <Button variant="volt" size="md" onClick={() => navigate(ROUTES.SEARCH)}>
+                Explorar partidos
+              </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {loadedMatches.map((match) => (
-                <article
+                <div
                   key={match.id}
-                  className="bg-surface border border-line rounded-xl p-5 sm:p-6 flex flex-col justify-between hover:border-line-strong transition-colors"
+                  className="bg-surface border border-line rounded-2xl p-5 flex flex-col justify-between hover:border-line-strong transition-all shadow-xs"
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2 text-xs text-ink-muted font-medium">
-                      <span>{match.tournamentOrCategory || 'Partido grabado'}</span>
-                      <span className="font-mono text-ink tabular-nums font-semibold">
-                        {match.score ? `Resultado: ${match.score}` : `${match.timeSlot} hs`}
+                    <div className="flex items-center justify-between gap-2 text-xs font-mono">
+                      <span className="px-2 py-0.5 rounded bg-turf-soft text-turf-ink font-semibold">
+                        {match.courtName}
                       </span>
+                      <span className="text-ink-muted">{match.timeSlot} hs</span>
                     </div>
 
-                    <h3 className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
+                    <h3 className="mt-3 font-display text-xl font-bold text-ink">
                       {match.title}
                     </h3>
 
-                    <div className="mt-2 text-xs text-ink-muted space-y-1">
-                      <p className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-turf shrink-0" aria-hidden="true" />
-                        <span>{match.clubName}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{match.courtName}</span>
-                      </p>
-                      <p className="flex items-center gap-1.5 font-mono tabular-nums">
-                        <Calendar className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-                        <span>{match.dateLabel}</span>
-                        <span aria-hidden="true">·</span>
-                        <Clock className="w-3.5 h-3.5 text-ink-muted shrink-0" aria-hidden="true" />
-                        <span>{match.timeSlot} hs</span>
-                      </p>
-                    </div>
+                    <p className="mt-1 text-xs text-ink-muted flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-turf shrink-0" aria-hidden="true" />
+                      <span>{match.clubName}</span>
+                    </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-line flex items-center justify-between gap-3">
+                  <div className="mt-5 pt-3 border-t border-line flex items-center justify-between gap-2">
                     <Button
-                      variant="primary"
+                      variant="volt"
                       size="sm"
                       onClick={() => navigate(buildMatchPath(match.id))}
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                      <Play className="w-3.5 h-3.5 fill-volt-ink" aria-hidden="true" />
                       <span>Ver partido</span>
                     </Button>
 
@@ -357,37 +370,73 @@ export const ProfileView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleShareMatch(match)}
-                        aria-label={`Compartir partido: ${match.title}`}
-                        className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg border border-line text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors cursor-pointer"
+                        aria-label="Compartir partido"
+                        className="w-9 h-9 rounded-lg border border-line text-ink-muted hover:text-ink hover:bg-surface-muted flex items-center justify-center cursor-pointer"
                       >
-                        <Share2 className="w-4 h-4" aria-hidden="true" />
+                        <Share2 className="w-4 h-4" />
                       </button>
-
                       <button
                         type="button"
-                        onClick={() => handleRemoveSavedMatch(match.id)}
-                        aria-label={`Quitar partido de guardados: ${match.title}`}
-                        className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg border border-line text-alert hover:bg-alert-soft transition-colors cursor-pointer"
+                        onClick={() => toggleSaveMatch(match.id)}
+                        aria-label="Quitar de guardados"
+                        className="w-9 h-9 rounded-lg border border-line text-ink-muted hover:text-red-500 hover:bg-surface-muted flex items-center justify-center cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Share Modal when triggered from profile */}
+      {/* Edit Title Dialog Modal */}
+      {editingPlay && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-surface border border-line p-5 shadow-2xl text-ink space-y-4">
+            <h3 className="font-display text-lg font-bold text-ink">
+              Editar nombre de la jugada
+            </h3>
+            <input
+              type="text"
+              value={editingTitleText}
+              onChange={(e) => setEditingTitleText(e.target.value)}
+              maxLength={60}
+              className="w-full h-11 px-3.5 rounded-xl border border-line bg-canvas text-sm font-medium text-ink focus:outline-none focus:border-turf"
+            />
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setEditingPlay(null)}>
+                Cancelar
+              </Button>
+              <Button variant="volt" size="sm" onClick={handleSaveEdit}>
+                Guardar nombre
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Play Confirmation Dialog */}
+      <DeletePlayDialog
+        isOpen={Boolean(playToDelete)}
+        playTitle={playToDelete?.title || ''}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setPlayToDelete(null)}
+      />
+
+      {/* Share Modal */}
       {shareTarget && (
         <ShareModal
           isOpen={Boolean(shareTarget)}
           onClose={() => setShareTarget(null)}
           match={shareTarget.match}
           activePlay={shareTarget.play}
-          currentTimestamp={shareTarget.play?.startTime ?? 0}
         />
       )}
     </div>
