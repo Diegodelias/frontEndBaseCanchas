@@ -9,6 +9,8 @@ import {
 
 export const NAV_LINKS = [
   { label: 'Encontrá una cancha', href: '#complejos' },
+  { label: 'Ver grabaciones', href: '/buscar' },
+  { label: 'Mi perfil', href: '/perfil' },
   { label: 'Cómo funciona', href: '#como-funciona' },
   { label: 'Para complejos', href: '#para-complejos' },
 ];

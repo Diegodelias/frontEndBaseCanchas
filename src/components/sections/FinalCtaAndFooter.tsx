@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { NAV_LINKS } from '../../data/landingContent';
 import { BrandWordmark } from '../ui/BrandWordmark';
 import { Button } from '../ui/Button';
@@ -66,12 +67,21 @@ export const FinalCtaAndFooter: React.FC<FinalCtaAndFooterProps> = ({
               <ul className="mt-3 space-y-2.5 text-sm">
                 {NAV_LINKS.map((link) => (
                   <li key={link.href}>
-                    <a
-                      href={link.href}
-                      className="text-pitch-ink/90 hover:text-volt transition-colors"
-                    >
-                      {link.label}
-                    </a>
+                    {link.href.startsWith('/') ? (
+                      <Link
+                        to={link.href}
+                        className="text-pitch-ink/90 hover:text-volt transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="text-pitch-ink/90 hover:text-volt transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
                 <li>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, MapPin, Menu, X } from 'lucide-react';
 import { NAV_LINKS } from '../../data/landingContent';
 import { CityOption } from '../../types/canchas';
@@ -30,28 +31,38 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4 lg:gap-8">
         {/* Zone 1: Brand Wordmark */}
-        <a
-          href="#inicio"
+        <Link
+          to="/"
           aria-label="Canchas3 Inicio"
           className="inline-flex items-center shrink-0 py-1"
         >
           <BrandWordmark tone="light" />
-        </a>
+        </Link>
 
         {/* Zone 2: Desktop Navigation & Single Mock City Selector */}
         <nav
           aria-label="Navegación principal"
           className="hidden lg:flex items-center gap-6 text-sm font-medium text-ink-muted"
         >
-          {NAV_LINKS.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 py-1"
-            >
-              {item.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((item) =>
+            item.href.startsWith('/') ? (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 py-1"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.href}
+                href={item.href}
+                className="hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 py-1"
+              >
+                {item.label}
+              </a>
+            )
+          )}
 
           <span className="h-4 w-px bg-line shrink-0" aria-hidden="true" />
 
@@ -147,16 +158,27 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <nav aria-label="Navegación móvil" className="flex flex-col space-y-1">
-            {NAV_LINKS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={handleMobileNavClick}
-                className="min-h-[44px] flex items-center text-base font-medium text-ink hover:text-turf transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((item) =>
+              item.href.startsWith('/') ? (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={handleMobileNavClick}
+                  className="min-h-[44px] flex items-center text-base font-medium text-ink hover:text-turf transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleMobileNavClick}
+                  className="min-h-[44px] flex items-center text-base font-medium text-ink hover:text-turf transition-colors"
+                >
+                  {item.label}
+                </a>
+              )
+            )}
           </nav>
 
           <div className="pt-3 border-t border-line flex items-center gap-3">

@@ -1,0 +1,46 @@
+import { SavedPlay } from '../types/play';
+
+export const MOCK_SAVED_PLAYS: SavedPlay[] = [
+  {
+    id: 'jugada-golazo-01',
+    matchId: 'match-en-f5-1900',
+    title: 'Definición cruzada al segundo palo',
+    clubName: 'Estación Norte Club',
+    courtName: 'Cancha 1 · Fútbol 5',
+    dateLabel: 'Hoy · Viernes',
+    timeSlot: '19:00',
+    startTime: 1, // seconds into the video
+    endTime: 4,
+    thumbnail: '',
+    createdAt: '2026-11-06T19:22:00Z',
+    userId: 'user-matias-01',
+  },
+  {
+    id: 'jugada-atajada-02',
+    matchId: 'match-en-f5-1900',
+    title: 'Festejo con el equipo tras el gol',
+    clubName: 'Estación Norte Club',
+    courtName: 'Cancha 1 · Fútbol 5',
+    dateLabel: 'Hoy · Viernes',
+    timeSlot: '19:00',
+    startTime: 2,
+    endTime: 5,
+    thumbnail: '',
+    createdAt: '2026-11-06T19:35:00Z',
+    userId: 'user-matias-01',
+  },
+  {
+    id: 'jugada-contra-03',
+    matchId: 'match-lc-f5-1900',
+    title: 'Contraataque rápido y toque rasante',
+    clubName: 'La Cantera Villa Crespo',
+    courtName: 'Cancha A · Fútbol 5 Techada',
+    dateLabel: 'Hoy · Viernes',
+    timeSlot: '19:00',
+    startTime: 0,
+    endTime: 3,
+    thumbnail: '',
+    createdAt: '2026-11-06T19:48:00Z',
+    userId: 'user-matias-01',
+  },
+];
