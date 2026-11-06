@@ -146,7 +146,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-surface text-ink border border-line rounded-t-2xl sm:rounded-xl p-5 sm:p-6 shadow-xl">
+      <div className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto overflow-x-hidden bg-surface text-ink border border-line rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-line">
           <div>
             <p className="text-xs font-medium text-ink-muted flex items-center gap-1.5">
@@ -431,11 +431,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
-              <Button variant="secondary" fullWidth onClick={onClose}>
+            <div className="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Button
+                type="button"
+                variant="secondary"
+                fullWidth
+                onClick={onClose}
+                className="order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" variant="volt" fullWidth>
+              <Button
+                type="submit"
+                variant="volt"
+                fullWidth
+                className="order-1 sm:order-2 font-display uppercase tracking-wider font-extrabold"
+              >
                 Confirmar reserva
               </Button>
             </div>

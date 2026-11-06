@@ -182,8 +182,10 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`bg-surface text-ink rounded-xl border border-line ${
-        isHero ? 'p-4 sm:p-5 shadow-2xl' : 'p-5 sm:p-6 shadow-sm'
+      className={`rounded-2xl transition-all ${
+        isHero
+          ? 'bg-[#0f1712]/90 backdrop-blur-md text-white border border-white/15 p-4 sm:p-5 shadow-2xl ring-1 ring-black/40'
+          : 'bg-surface text-ink border border-line p-5 sm:p-6 shadow-sm'
       } ${className}`}
     >
       <div
@@ -197,7 +199,9 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
         <div>
           <label
             htmlFor={`selector-club-${variant}`}
-            className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1.5"
+            className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${
+              isHero ? 'text-white/70' : 'text-ink-muted'
+            }`}
           >
             1. Club o complejo
           </label>
@@ -206,17 +210,23 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
               id={`selector-club-${variant}`}
               value={clubId}
               onChange={(e) => handleClubChange(e.target.value)}
-              className="w-full min-h-[46px] appearance-none rounded-lg bg-canvas border border-line-strong pl-3.5 pr-9 py-2.5 text-sm font-medium text-ink cursor-pointer focus:outline-none"
+              className={`w-full min-h-[46px] appearance-none rounded-xl pl-3.5 pr-9 py-2.5 text-sm font-medium cursor-pointer focus:outline-none transition-colors ${
+                isHero
+                  ? 'bg-[#18231c] border border-white/15 text-white focus:border-volt focus:ring-1 focus:ring-volt'
+                  : 'bg-canvas border border-line-strong text-ink focus:border-turf'
+              }`}
             >
               <option value="">Elegí un complejo</option>
               {MOCK_COMPLEXES.map((complex) => (
-                <option key={complex.id} value={complex.id}>
+                <option key={complex.id} value={complex.id} className="bg-[#121c15] text-white">
                   {complex.name} ({complex.zone})
                 </option>
               ))}
             </select>
             <ChevronDown
-              className="w-4 h-4 text-ink-muted pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              className={`w-4 h-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${
+                isHero ? 'text-white/50' : 'text-ink-muted'
+              }`}
               aria-hidden="true"
             />
           </div>
@@ -226,7 +236,9 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
         <div>
           <label
             htmlFor={`selector-court-${variant}`}
-            className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1.5"
+            className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${
+              isHero ? 'text-white/70' : 'text-ink-muted'
+            }`}
           >
             2. Cancha
           </label>
@@ -236,19 +248,25 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
               value={courtId}
               onChange={(e) => handleCourtChange(e.target.value)}
               disabled={!selectedComplex}
-              className="w-full min-h-[46px] appearance-none rounded-lg bg-canvas border border-line-strong pl-3.5 pr-9 py-2.5 text-sm font-medium text-ink cursor-pointer disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed focus:outline-none"
+              className={`w-full min-h-[46px] appearance-none rounded-xl pl-3.5 pr-9 py-2.5 text-sm font-medium cursor-pointer focus:outline-none transition-colors ${
+                isHero
+                  ? 'bg-[#18231c] border border-white/15 text-white focus:border-volt focus:ring-1 focus:ring-volt disabled:bg-black/30 disabled:text-white/40 disabled:border-white/10 disabled:cursor-not-allowed'
+                  : 'bg-canvas border border-line-strong text-ink focus:border-turf disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed'
+              }`}
             >
               <option value="">
                 {selectedComplex ? 'Elegí una cancha' : 'Primero elegí complejo'}
               </option>
               {selectedComplex?.courts.map((court) => (
-                <option key={court.id} value={court.id}>
+                <option key={court.id} value={court.id} className="bg-[#121c15] text-white">
                   {court.name}
                 </option>
               ))}
             </select>
             <ChevronDown
-              className="w-4 h-4 text-ink-muted pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              className={`w-4 h-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${
+                isHero ? 'text-white/50' : 'text-ink-muted'
+              }`}
               aria-hidden="true"
             />
           </div>
@@ -258,7 +276,9 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
         <div>
           <label
             htmlFor={`selector-day-${variant}`}
-            className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1.5"
+            className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${
+              isHero ? 'text-white/70' : 'text-ink-muted'
+            }`}
           >
             3. Fecha
           </label>
@@ -268,19 +288,25 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
               value={dayId}
               onChange={(e) => handleDayChange(e.target.value)}
               disabled={!selectedCourt}
-              className="w-full min-h-[46px] appearance-none rounded-lg bg-canvas border border-line-strong pl-3.5 pr-9 py-2.5 text-sm font-medium text-ink cursor-pointer disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed focus:outline-none"
+              className={`w-full min-h-[46px] appearance-none rounded-xl pl-3.5 pr-9 py-2.5 text-sm font-medium cursor-pointer focus:outline-none transition-colors ${
+                isHero
+                  ? 'bg-[#18231c] border border-white/15 text-white focus:border-volt focus:ring-1 focus:ring-volt disabled:bg-black/30 disabled:text-white/40 disabled:border-white/10 disabled:cursor-not-allowed'
+                  : 'bg-canvas border border-line-strong text-ink focus:border-turf disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed'
+              }`}
             >
               <option value="">
                 {selectedCourt ? 'Elegí una fecha' : 'Primero elegí cancha'}
               </option>
               {selectedCourt?.availabilityByDay.map((day) => (
-                <option key={day.id} value={day.id}>
+                <option key={day.id} value={day.id} className="bg-[#121c15] text-white">
                   {day.label}
                 </option>
               ))}
             </select>
             <ChevronDown
-              className="w-4 h-4 text-ink-muted pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              className={`w-4 h-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${
+                isHero ? 'text-white/50' : 'text-ink-muted'
+              }`}
               aria-hidden="true"
             />
           </div>
@@ -290,7 +316,9 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
         <div>
           <label
             htmlFor={`selector-slot-${variant}`}
-            className="block text-xs font-semibold uppercase tracking-wider text-ink-muted mb-1.5"
+            className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${
+              isHero ? 'text-white/70' : 'text-ink-muted'
+            }`}
           >
             4. Horario
           </label>
@@ -300,7 +328,11 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
               value={slotId}
               onChange={(e) => handleSlotChange(e.target.value)}
               disabled={!selectedDay || availableSlots.length === 0}
-              className="w-full min-h-[46px] appearance-none rounded-lg bg-canvas border border-line-strong pl-3.5 pr-9 py-2.5 text-sm font-mono font-medium text-ink cursor-pointer disabled:font-sans disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed focus:outline-none"
+              className={`w-full min-h-[46px] appearance-none rounded-xl pl-3.5 pr-9 py-2.5 text-sm font-mono font-medium cursor-pointer focus:outline-none transition-colors ${
+                isHero
+                  ? 'bg-[#18231c] border border-white/15 text-white focus:border-volt focus:ring-1 focus:ring-volt disabled:font-sans disabled:bg-black/30 disabled:text-white/40 disabled:border-white/10 disabled:cursor-not-allowed'
+                  : 'bg-canvas border border-line-strong text-ink focus:border-turf disabled:font-sans disabled:bg-surface-muted disabled:text-ink-muted/60 disabled:border-line disabled:cursor-not-allowed'
+              }`}
             >
               <option value="">
                 {!selectedDay
@@ -310,13 +342,15 @@ export const MatchCascadingSelector: React.FC<MatchCascadingSelectorProps> = ({
                   : 'Elegí un horario'}
               </option>
               {availableSlots.map((slot) => (
-                <option key={slot.id} value={slot.id}>
+                <option key={slot.id} value={slot.id} className="bg-[#121c15] text-white">
                   {slot.time} hs
                 </option>
               ))}
             </select>
             <ChevronDown
-              className="w-4 h-4 text-ink-muted pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+              className={`w-4 h-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${
+                isHero ? 'text-white/50' : 'text-ink-muted'
+              }`}
               aria-hidden="true"
             />
           </div>

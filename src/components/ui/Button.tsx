@@ -38,8 +38,8 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg whitespace-nowrap shrink-0 cursor-pointer transition-colors transition-transform duration-150 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${
-        fullWidth ? 'w-full' : ''
+      className={`inline-flex items-center justify-center gap-2 rounded-xl whitespace-nowrap cursor-pointer transition-colors transition-transform duration-150 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${
+        fullWidth ? 'w-full shrink min-w-0' : 'shrink-0'
       } ${className}`}
       {...props}
     >

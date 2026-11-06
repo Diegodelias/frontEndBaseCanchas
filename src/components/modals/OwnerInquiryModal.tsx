@@ -85,16 +85,16 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full sm:max-w-md max-h-[92vh] overflow-y-auto bg-surface text-ink border border-line rounded-t-2xl sm:rounded-xl p-5 sm:p-6 shadow-xl">
+      <div className="w-full sm:max-w-md max-h-[92vh] overflow-y-auto overflow-x-hidden bg-surface text-ink border border-line rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-line">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-turf-ink">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-turf">
               <Building2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               <span>Sumá tu club a Canchas3</span>
             </span>
             <h2
               id="owner-modal-title"
-              className="mt-1 font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink"
+              className="mt-1 font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-ink"
             >
               Quiero sumar mi complejo
             </h2>
@@ -104,7 +104,7 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Cerrar formulario para complejos"
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg border border-line text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors cursor-pointer shrink-0"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-xl border border-line text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
@@ -171,7 +171,7 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
                     setErrors((prev) => ({ ...prev, complexName: undefined }));
                 }}
                 placeholder="Ej. Club Deportivo Sur"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-turf"
               />
               {errors.complexName && (
                 <p className="mt-1.5 text-xs font-medium text-alert flex items-start gap-1">
@@ -198,7 +198,7 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
                     setErrors((prev) => ({ ...prev, contact: undefined }));
                 }}
                 placeholder="Ej. 11 4567 8901 o info@miclub.com.ar"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-turf"
               />
               {errors.contact && (
                 <p className="mt-1.5 text-xs font-medium text-alert flex items-start gap-1">
@@ -224,7 +224,7 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
                   if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
                 }}
                 placeholder="Ej. Buenos Aires"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70"
+                className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-surface border border-line-strong text-sm text-ink placeholder:text-ink-muted/70 focus:outline-none focus:border-turf"
               />
               {errors.city && (
                 <p className="mt-1.5 text-xs font-medium text-alert flex items-start gap-1">
@@ -234,11 +234,22 @@ export const OwnerInquiryModal: React.FC<OwnerInquiryModalProps> = ({
               )}
             </div>
 
-            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center gap-2.5">
-              <Button variant="secondary" fullWidth onClick={onClose}>
+            <div className="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Button
+                type="button"
+                variant="secondary"
+                fullWidth
+                onClick={onClose}
+                className="order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" variant="volt" fullWidth>
+              <Button
+                type="submit"
+                variant="volt"
+                fullWidth
+                className="order-1 sm:order-2 font-display uppercase tracking-wider font-extrabold"
+              >
                 Enviar consulta
               </Button>
             </div>

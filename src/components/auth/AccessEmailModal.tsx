@@ -181,12 +181,13 @@ export const AccessEmailModal: React.FC<AccessEmailModalProps> = ({
               )}
             </div>
 
-            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center gap-2.5">
+            <div className="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <Button
                 type="button"
                 variant="secondary"
                 fullWidth
                 onClick={onClose}
+                className="order-2 sm:order-1"
               >
                 Cerrar y seguir viendo
               </Button>
@@ -195,8 +196,9 @@ export const AccessEmailModal: React.FC<AccessEmailModalProps> = ({
                 variant="volt"
                 fullWidth
                 disabled={isSubmitting}
+                className="order-1 sm:order-2 font-display uppercase tracking-wider font-extrabold"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar enlace de acceso'}
+                {isSubmitting ? 'Enviando...' : 'Enviar enlace'}
               </Button>
             </div>
           </form>

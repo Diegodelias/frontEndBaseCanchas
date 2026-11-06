@@ -258,7 +258,45 @@ export const ProfileView: React.FC = () => {
 
       {/* TAB 1: Mis Jugadas (Primary content, matching reference 8_cac3471b.png) */}
       {activeTab === 'plays' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
+          {/* Header Bar matching 8_cac3471b.png: "Mis jugadas" + quota badge */}
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
+              Mis jugadas
+            </h2>
+            <div className="px-3 py-1 rounded-full bg-surface border border-line flex items-center gap-1.5 text-xs font-semibold shadow-xs">
+              <span className="font-mono text-ink-muted">
+                {savedPlays.length} de 20
+              </span>
+              <span aria-hidden="true" className="text-ink-muted">·</span>
+              <span className="font-bold text-[#f59e0b] hover:underline cursor-pointer">
+                Plus &rsaquo;
+              </span>
+            </div>
+          </div>
+
+          {/* Expandable Notification Banner matching 8_cac3471b.png */}
+          <div className="rounded-xl bg-surface border border-line overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('matches');
+              }}
+              className="w-full px-4 py-3 text-left flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-ink hover:bg-surface-muted transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <span className="w-6 h-6 rounded-full bg-[#f59e0b] text-black flex items-center justify-center shrink-0">
+                  <Play className="w-3 h-3 fill-current ml-0.5" aria-hidden="true" />
+                </span>
+                <span className="truncate">
+                  <strong>{savedMatchIds.length || 5} partidos para ver</strong>
+                  <span className="text-ink-muted font-normal ml-1">· uno vence en 3 días</span>
+                </span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-ink-muted shrink-0" aria-hidden="true" />
+            </button>
+          </div>
+
           {savedPlays.length === 0 ? (
             /* Empty State */
             <div className="p-8 sm:p-14 rounded-2xl bg-surface border border-line text-center max-w-lg mx-auto space-y-4">
@@ -295,10 +333,11 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {plays.map((play) => (
+                  {plays.map((play, idx) => (
                     <PlayCard
                       key={play.id}
                       play={play}
+                      indexNumber={idx + 1}
                       layout="profile"
                       onPlay={handlePlayCardPlay}
                       onShare={handleSharePlay}

@@ -113,45 +113,36 @@ export const PlaysPanel: React.FC<PlaysPanelProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="plays-panel-title"
-      className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-xs animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full sm:max-w-md h-full bg-pitch-surface border-l border-pitch-line text-pitch-ink flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200">
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-pitch-line flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-volt/20 text-volt border border-volt/30 flex items-center justify-center">
-              <Bookmark className="w-4 h-4" aria-hidden="true" />
-            </div>
-            <div>
-              <h3 id="plays-panel-title" className="font-display text-lg font-bold tracking-tight text-pitch-ink">
-                Mis jugadas
-              </h3>
-              <p className="text-xs text-pitch-muted">
-                {plays.length === 0
-                  ? 'Sin jugadas en este partido'
-                  : `${plays.length} ${plays.length === 1 ? 'jugada guardada' : 'jugadas guardadas'}`}
-              </p>
-            </div>
-          </div>
-
+      <div className="relative w-full max-w-sm sm:max-w-md max-h-[85vh] rounded-2xl bg-[#121815]/95 border border-white/15 text-white flex flex-col shadow-2xl backdrop-blur-md overflow-hidden animate-in zoom-in-95 duration-200">
+        {/* Header Bar matching 1_0134639b.png and 7_fa7d0ba7.png */}
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <div className="w-6" aria-hidden="true" />
+          <h3
+            id="plays-panel-title"
+            className="font-display text-lg font-bold tracking-tight text-white text-center flex-1"
+          >
+            Jugadas
+          </h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar panel de jugadas"
-            className="p-1.5 rounded-lg text-pitch-muted hover:text-pitch-ink hover:bg-pitch-elevated transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-lg text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer shrink-0"
           >
-            <X className="w-5 h-5" aria-hidden="true" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
           {/* Edit Title Dialog Modal (if active) */}
           {editingPlay && (
-            <div className="p-4 rounded-xl bg-pitch-elevated border border-volt/40 space-y-3">
+            <div className="p-3.5 rounded-xl bg-pitch-elevated border border-volt/50 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-volt">
                   Editar nombre
@@ -182,38 +173,19 @@ export const PlaysPanel: React.FC<PlaysPanelProps> = ({
             </div>
           )}
 
-          {/* Empty state (matches reference 1_0134639b.png) */}
+          {/* Empty state (exact match to 1_0134639b.png) */}
           {plays.length === 0 ? (
-            <div className="p-6 text-center rounded-2xl bg-pitch-elevated/60 border border-pitch-line space-y-4 my-auto">
-              <div className="w-14 h-14 mx-auto rounded-full bg-pitch border border-pitch-line flex items-center justify-center text-volt">
-                <Film className="w-7 h-7" aria-hidden="true" />
-              </div>
-              <div>
-                <h4 className="font-display text-lg font-bold text-pitch-ink">
-                  Todavía no guardaste jugadas
-                </h4>
-                <p className="text-xs text-pitch-muted mt-1 max-w-xs mx-auto leading-relaxed">
-                  Tocá el botón <strong className="text-volt font-semibold">Guardar jugada</strong> cuando veas un momento que quieras conservar y compartir.
-                </p>
-              </div>
-              <Button
-                variant="volt"
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  onTriggerSavePlay();
-                }}
-              >
-                <Sparkles className="w-4 h-4 mr-1.5" />
-                <span>Guardar mi primera jugada</span>
-              </Button>
+            <div className="p-4 rounded-xl border border-dashed border-white/15 bg-white/5 text-center text-xs text-white/80 leading-relaxed">
+              Todavía no grabaste jugadas. Tocá el botón rojo para grabar una y compartirla.
             </div>
           ) : (
-            <div className="space-y-2.5">
-              {plays.map((play) => (
+            /* Populated plays list (exact match to 7_fa7d0ba7.png) */
+            <div className="space-y-2">
+              {plays.map((play, idx) => (
                 <PlayCard
                   key={play.id}
                   play={play}
+                  indexNumber={idx + 1}
                   layout="compact"
                   onPlay={onPlaySelected}
                   onShare={onShareSelected}
@@ -224,62 +196,78 @@ export const PlaysPanel: React.FC<PlaysPanelProps> = ({
             </div>
           )}
 
-          {/* Guest Cloud Save Banner (matches reference 1_0134639b.png & 7_fa7d0ba7.png) */}
-          {authMode === 'guest' && !emailSentSuccess && (
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-pitch-elevated to-pitch border border-volt/20 space-y-3 mt-4">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-volt shrink-0" aria-hidden="true" />
-                <h4 className="font-display text-sm font-bold uppercase tracking-wider text-pitch-ink">
-                  Guardá tus jugadas en la nube
-                </h4>
-              </div>
-              <p className="text-xs text-pitch-muted leading-relaxed">
-                Ingresá tu email y te enviamos un enlace para volver a encontrarlas en tu perfil desde cualquier dispositivo.
-              </p>
-              <form onSubmit={handleMagicLinkSubmit} className="space-y-2">
+          {/* Highlights / Applause detection row matching 1_0134639b.png & 7_fa7d0ba7.png */}
+          <div className="px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-white/90">
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true">👏</span>
+              <span>19 aplausos detectados</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                showToast({
+                  type: 'info',
+                  title: 'Momentos destacados',
+                  message: 'El sistema acústico detectó 19 momentos de ovación en el partido.',
+                  durationMs: 3500,
+                });
+              }}
+              className="text-xs font-bold text-[#f59e0b] hover:underline cursor-pointer"
+            >
+              Ver
+            </button>
+          </div>
+
+          {/* Guest Cloud Save Banner (matches reference 1_0134639b.png) */}
+          {authMode === 'guest' && !emailSentSuccess ? (
+            <div className="p-4 rounded-xl bg-black/40 border border-[#f59e0b]/40 space-y-3">
+              <h4 className="font-display text-sm font-bold tracking-tight text-white">
+                Guardá tus jugadas en la nube
+              </h4>
+              <form onSubmit={handleMagicLinkSubmit} className="space-y-2.5">
                 <input
                   type="email"
                   required
                   value={guestEmail}
                   onChange={(e) => setGuestEmail(e.target.value)}
-                  placeholder="Tu email (ej. nombre@correo.com)"
-                  className="w-full h-10 px-3 rounded-xl bg-pitch border border-pitch-line text-xs text-pitch-ink placeholder:text-pitch-muted/60 focus:outline-none focus:border-volt"
+                  placeholder="Tu email"
+                  className="w-full h-10 px-3 rounded-lg bg-[#1f2824] border border-white/15 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-[#f59e0b]"
                 />
-                <Button
+                <button
                   type="submit"
-                  variant="volt"
-                  size="sm"
-                  fullWidth
                   disabled={isSendingEmail}
+                  className="w-full h-10 rounded-lg bg-[#f59e0b] hover:bg-[#d97706] text-black font-display font-extrabold text-xs uppercase tracking-wider flex items-center justify-center transition-colors cursor-pointer shadow-xs disabled:opacity-60"
                 >
-                  {isSendingEmail ? 'Enviando enlace...' : 'Crear mi perfil gratis'}
-                </Button>
+                  {isSendingEmail ? 'Enviando enlace...' : 'CREAR MI PERFIL GRATIS'}
+                </button>
               </form>
-              <p className="text-[10px] text-pitch-muted text-center">
-                Te mandamos un link directo sin contraseñas engorrosas.
+              <p className="text-[11px] text-white/60 text-center">
+                Te mandamos un link para entrar.
               </p>
             </div>
-          )}
-
-          {/* Registered / synced confirmation */}
-          {(authMode === 'registered' || emailSentSuccess) && (
-            <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300">
+          ) : (
+            /* Registered / synced confirmation matching 7_fa7d0ba7.png */
+            <div className="px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-white/90">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Jugadas sincronizadas en tu perfil</span>
+                <span className="text-emerald-400 font-bold" aria-hidden="true">✔</span>
+                <span>Guardadas en tu perfil</span>
               </div>
-              <a href="/perfil" className="font-bold underline text-emerald-200 hover:text-white">
-                Ver
+              <a
+                href="/perfil"
+                className="text-xs font-bold text-[#f59e0b] hover:underline flex items-center gap-1"
+              >
+                <span>Ver</span>
+                <span aria-hidden="true" className="text-[10px]">↗</span>
               </a>
             </div>
           )}
         </div>
 
-        {/* Footer CTA */}
-        <div className="p-4 border-t border-pitch-line bg-pitch/80 flex items-center gap-3">
+        {/* Footer Action Button */}
+        <div className="p-3.5 border-t border-white/10 bg-black/40 flex items-center justify-center">
           <Button
             variant="volt"
-            size="md"
+            size="sm"
             fullWidth
             onClick={() => {
               onClose();
@@ -287,7 +275,7 @@ export const PlaysPanel: React.FC<PlaysPanelProps> = ({
             }}
           >
             <Plus className="w-4 h-4 mr-1.5" />
-            <span>Marcar nueva jugada</span>
+            <span>Grabar otra jugada</span>
           </Button>
         </div>
       </div>
