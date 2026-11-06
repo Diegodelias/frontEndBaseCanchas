@@ -40,8 +40,8 @@ export const PlayerBenefitsSection: React.FC<PlayerBenefitsSectionProps> = ({
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.45fr] gap-10 lg:gap-16 items-start">
-          {/* Left Sticky Editorial Column */}
-          <div className="lg:sticky lg:top-24">
+          {/* Left Editorial Column - Posición estática en el flujo natural */}
+          <div className="flex flex-col">
             <p className="text-xs font-semibold uppercase tracking-widest text-turf-ink">
               Para quienes juegan
             </p>
