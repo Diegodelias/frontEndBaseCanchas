@@ -10,7 +10,7 @@ export const BrandWordmark: React.FC<BrandWordmarkProps> = ({
   className = '',
 }) => {
   const baseText = tone === 'dark' ? 'text-pitch-ink' : 'text-ink';
-  const accentText = tone === 'dark' ? 'text-volt' : 'text-turf';
+  const accentText = tone === 'dark' ? 'text-volt' : 'text-turf dark:text-volt';
 
   return (
     <span

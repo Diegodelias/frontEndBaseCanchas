@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *, .dark, .dark *));
+
 @theme {
   --font-display: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
@@ -33,7 +35,8 @@
   --color-warning-soft: var(--c3-warning-soft);
 }
 
-:root {
+:root,
+[data-theme='light'] {
   /* 60% Neutral Light Canvas */
   --c3-canvas: #f5f7f4;
   --c3-surface: #ffffff;
@@ -45,7 +48,7 @@
   --c3-line: #dce2da;
   --c3-line-strong: #b9c5b8;
 
-  /* Dark Stadium Surfaces (Hero, Complex Owners, Footer) */
+  /* Stadium Surfaces */
   --c3-pitch: #09100c;
   --c3-pitch-surface: #111c16;
   --c3-pitch-elevated: #18271f;
@@ -75,6 +78,50 @@
   --c3-backdrop: rgba(9, 16, 12, 0.74);
 }
 
+/* Dark Theme Tokens */
+[data-theme='dark'],
+.dark {
+  /* Dark Stadium Canvas & Surfaces */
+  --c3-canvas: #0a110d;
+  --c3-surface: #121b15;
+  --c3-surface-muted: #18251e;
+
+  /* Crisp Light Text & Contrast Lines */
+  --c3-ink: #f2f7f3;
+  --c3-ink-muted: #9ab0a2;
+  --c3-line: #203327;
+  --c3-line-strong: #2f4837;
+
+  /* Stadium Surfaces in Dark Mode */
+  --c3-pitch: #060a08;
+  --c3-pitch-surface: #0e1611;
+  --c3-pitch-elevated: #15221a;
+  --c3-pitch-ink: #f2f7f3;
+  --c3-pitch-muted: #9ab0a2;
+  --c3-pitch-line: #203327;
+
+  /* Accents */
+  --c3-volt: #c4f236;
+  --c3-volt-hover: #d3f85c;
+  --c3-volt-ink: #09100c;
+  --c3-turf: #22c55e;
+  --c3-turf-soft: #143520;
+  --c3-turf-ink: #86efac;
+  --c3-turf-highlight: #16a34a;
+
+  /* Semantic States */
+  --c3-alert: #f87171;
+  --c3-alert-soft: #341416;
+  --c3-warning: #fbbf24;
+  --c3-warning-soft: #30210b;
+
+  /* Scrims & Overlays */
+  --c3-scrim-top: rgba(6, 10, 8, 0.82);
+  --c3-scrim-mid: rgba(6, 10, 8, 0.68);
+  --c3-scrim-bottom: rgba(6, 10, 8, 0.96);
+  --c3-backdrop: rgba(6, 10, 8, 0.85);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -83,12 +130,14 @@
     color: var(--c3-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   body {
     overflow-x: hidden;
     background-color: var(--c3-canvas);
     color: var(--c3-ink);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1,
@@ -111,8 +160,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html,
+  body {
     scroll-behavior: auto;
+    transition: none !important;
   }
 
   *,
@@ -123,4 +174,3 @@
     transition-duration: 0.01ms !important;
   }
 }
-

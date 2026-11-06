@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { PlaysProvider } from './context/PlaysContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { LandingPage } from './pages/LandingPage';
 import { LiveCamerasPage } from './pages/LiveCamerasPage';
 import { LivePlayerPage } from './pages/LivePlayerPage';
@@ -13,9 +14,10 @@ import { ROUTES } from './routes/paths';
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <PlaysProvider>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <PlaysProvider>
           <Routes>
             <Route path={ROUTES.HOME} element={<LandingPage />} />
             <Route path={ROUTES.SEARCH} element={<SearchPage />} />
@@ -29,7 +31,8 @@ export function App() {
         </PlaysProvider>
       </AuthProvider>
     </BrowserRouter>
-  );
+  </ThemeProvider>
+);
 }
 
 export default App;

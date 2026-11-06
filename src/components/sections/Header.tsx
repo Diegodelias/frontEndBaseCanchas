@@ -5,6 +5,7 @@ import { NAV_LINKS } from '../../data/landingContent';
 import { CityOption } from '../../types/canchas';
 import { BrandWordmark } from '../ui/BrandWordmark';
 import { Button } from '../ui/Button';
+import { ThemeToggle } from '../theme/ThemeToggle';
 
 interface HeaderProps {
   cities: CityOption[];
@@ -93,12 +94,12 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </nav>
 
-        {/* Zone 3: Desktop Actions & Mobile Always-Visible CTA + Menu Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Zone 3: Actions & Utilities */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           <button
             type="button"
             onClick={onLoginClick}
-            className="hidden lg:inline-flex items-center justify-center min-h-[40px] px-3 py-2 text-sm font-medium text-ink-muted hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer"
+            className="hidden lg:inline-flex items-center justify-center h-10 min-h-[40px] px-3.5 py-2 text-sm font-medium text-ink-muted hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer self-center"
           >
             Ingresar
           </button>
@@ -107,10 +108,14 @@ export const Header: React.FC<HeaderProps> = ({
             variant="volt"
             size="sm"
             onClick={onReserveNowClick}
-            className="text-xs sm:text-sm"
+            className="text-xs sm:text-sm h-10 self-center"
           >
             Reservá ahora
           </Button>
+
+          <div className="theme-toggle-container flex items-center justify-center shrink-0 self-center my-auto sm:ml-0.5">
+            <ThemeToggle />
+          </div>
 
           <button
             type="button"
@@ -118,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav-drawer"
             aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-            className="lg:hidden min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg border border-line text-ink hover:bg-surface-muted transition-colors cursor-pointer shrink-0"
+            className="lg:hidden w-10 h-10 min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg border border-line text-ink hover:bg-surface-muted transition-colors cursor-pointer shrink-0 self-center my-auto"
           >
             {mobileMenuOpen ? (
               <X className="w-5 h-5" aria-hidden="true" />
@@ -184,7 +189,14 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </nav>
 
-          <div className="pt-3 border-t border-line flex items-center gap-3">
+          <div className="pt-3 border-t border-line flex items-center justify-between">
+            <span className="text-sm font-semibold text-ink">Tema visual</span>
+            <div className="theme-toggle-container flex items-center shrink-0 self-center my-auto">
+              <ThemeToggle variant="switch" showLabel />
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center gap-3">
             <Button
               variant="secondary"
               fullWidth

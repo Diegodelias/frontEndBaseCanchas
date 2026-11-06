@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ROUTES } from '../../routes/paths';
 import { BrandWordmark } from '../ui/BrandWordmark';
 import { Button } from '../ui/Button';
+import { ThemeToggle } from '../theme/ThemeToggle';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -71,13 +72,17 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Zone 3: Action */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           <Link to={ROUTES.SEARCH}>
             <Button variant="volt" size="sm" className="hidden sm:inline-flex">
               <Search className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               <span>Ver grabaciones</span>
             </Button>
           </Link>
+
+          <div className="theme-toggle-container flex items-center justify-center shrink-0 self-center my-auto sm:ml-0.5">
+            <ThemeToggle />
+          </div>
 
           <Link to={ROUTES.PROFILE} className="sm:hidden">
             <button
@@ -135,6 +140,13 @@ export const Navbar: React.FC = () => {
               Mi perfil y jugadas guardadas
             </Link>
           </nav>
+
+          <div className="pt-3 border-t border-line flex items-center justify-between">
+            <span className="text-sm font-semibold text-ink">Tema visual</span>
+            <div className="theme-toggle-container flex items-center shrink-0 self-center my-auto">
+              <ThemeToggle variant="switch" showLabel />
+            </div>
+          </div>
         </div>
       )}
     </header>
