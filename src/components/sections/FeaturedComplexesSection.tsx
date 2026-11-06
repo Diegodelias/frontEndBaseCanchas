@@ -1,6 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { RotateCcw } from 'lucide-react';
+import { MOCK_LIVE_CAMERAS } from '../../data/mockLiveCameras';
+import { ROUTES } from '../../routes/paths';
 import { Complex, SearchSelection, SportType } from '../../types/canchas';
+import { LiveCourtCard } from '../live/LiveCourtCard';
 import { Button } from '../ui/Button';
 import { ComplexCard } from '../ui/ComplexCard';
 import { ComplexCardSkeleton } from '../ui/ComplexCardSkeleton';
@@ -41,6 +45,9 @@ export const FeaturedComplexesSection: React.FC<
   onOpenBooking,
   isLoading,
 }) => {
+  const featuredLiveCamera =
+    MOCK_LIVE_CAMERAS.find((c) => c.status === 'live') || MOCK_LIVE_CAMERAS[0];
+
   const buildMatchedHint = (complex: Complex): string | undefined => {
     if (!activeSearch || activeSearch.complexId !== complex.id) return undefined;
 
@@ -156,7 +163,6 @@ export const FeaturedComplexesSection: React.FC<
             </div>
           </div>
         ) : (
-          /* Complex Cards Grid */
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {complexes.map((complex) => (
               <ComplexCard
@@ -166,6 +172,37 @@ export const FeaturedComplexesSection: React.FC<
                 onOpenBooking={onOpenBooking}
               />
             ))}
+          </div>
+        )}
+
+        {/* Acceso secundario claramente diferenciado: Mirá la cancha en vivo */}
+        {featuredLiveCamera && (
+          <div className="mt-16 pt-12 border-t border-line">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-turf-ink mb-1">
+                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" aria-hidden="true" />
+                  <span>Transmisión en tiempo real</span>
+                </div>
+                <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-ink">
+                  Mirá la cancha en vivo
+                </h3>
+                <p className="mt-1 text-sm text-ink-muted max-w-xl">
+                  Conectate directamente a la cámara para ver el estado de la cancha y los partidos que se están jugando ahora.
+                </p>
+              </div>
+
+              <Link
+                to={ROUTES.LIVE}
+                className="text-xs sm:text-sm font-semibold text-turf hover:text-turf-hover transition-colors whitespace-nowrap self-start sm:self-auto"
+              >
+                Ver todas las cámaras ({MOCK_LIVE_CAMERAS.length}) →
+              </Link>
+            </div>
+
+            <div className="max-w-md">
+              <LiveCourtCard camera={featuredLiveCamera} featuredBanner />
+            </div>
           </div>
         )}
       </div>

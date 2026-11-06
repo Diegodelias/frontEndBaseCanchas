@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { PlaysProvider } from './context/PlaysContext';
 import { LandingPage } from './pages/LandingPage';
+import { LiveCamerasPage } from './pages/LiveCamerasPage';
+import { LivePlayerPage } from './pages/LivePlayerPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlayerPage } from './pages/PlayerPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -17,6 +19,8 @@ export function App() {
           <Routes>
             <Route path={ROUTES.HOME} element={<LandingPage />} />
             <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+            <Route path={ROUTES.LIVE} element={<LiveCamerasPage />} />
+            <Route path={ROUTES.LIVE_STREAM} element={<LivePlayerPage />} />
             <Route path={ROUTES.MATCH} element={<PlayerPage mode="match" />} />
             <Route path={ROUTES.PLAY} element={<PlayerPage mode="play" />} />
             <Route path={ROUTES.PROFILE} element={<ProfilePage />} />

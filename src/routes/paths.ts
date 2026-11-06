@@ -8,6 +8,8 @@ export const ROUTES = {
   MATCH: '/partido/:matchId',
   PLAY: '/jugada/:playId',
   PROFILE: '/perfil',
+  LIVE: '/en-vivo',
+  LIVE_STREAM: '/en-vivo/:cameraId',
 } as const;
 
 export function buildMatchPath(matchId: string): string {
@@ -16,6 +18,11 @@ export function buildMatchPath(matchId: string): string {
 
 export function buildPlayPath(playId: string): string {
   return `/jugada/${encodeURIComponent(playId)}`;
+}
+
+export function buildLiveStreamPath(cameraId: string, forceError = false): string {
+  const base = `/en-vivo/${encodeURIComponent(cameraId)}`;
+  return forceError ? `${base}?estado=error` : base;
 }
 
 export function buildSearchPath(params?: {

@@ -49,9 +49,12 @@ export const Header: React.FC<HeaderProps> = ({
               <Link
                 key={item.href}
                 to={item.href}
-                className="hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 py-1"
+                className="hover:text-ink transition-colors duration-150 whitespace-nowrap shrink-0 py-1 inline-flex items-center"
               >
-                {item.label}
+                {item.href === '/en-vivo' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse mr-1.5" aria-hidden="true" />
+                )}
+                <span>{item.label}</span>
               </Link>
             ) : (
               <a

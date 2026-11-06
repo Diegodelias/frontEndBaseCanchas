@@ -40,6 +40,16 @@ export const Navbar: React.FC = () => {
           </Link>
 
           <Link
+            to={ROUTES.LIVE}
+            className={`inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 py-1 ${
+              isActive(ROUTES.LIVE) ? 'text-ink font-semibold' : 'hover:text-ink'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
+            <span>En vivo</span>
+          </Link>
+
+          <Link
             to={ROUTES.SEARCH}
             className={`inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 py-1 ${
               isActive(ROUTES.SEARCH) ? 'text-ink font-semibold' : 'hover:text-ink'
@@ -101,6 +111,14 @@ export const Navbar: React.FC = () => {
               className="min-h-[44px] flex items-center text-base font-medium text-ink hover:text-turf"
             >
               Inicio
+            </Link>
+            <Link
+              to={ROUTES.LIVE}
+              onClick={() => setMobileMenuOpen(false)}
+              className="min-h-[44px] flex items-center text-base font-medium text-ink hover:text-turf gap-2"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
+              <span>Canchas en vivo</span>
             </Link>
             <Link
               to={ROUTES.SEARCH}
