@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-canvas: var(--c3-canvas);
+  --color-surface: var(--c3-surface);
+  --color-surface-muted: var(--c3-surface-muted);
+  --color-ink: var(--c3-ink);
+  --color-ink-muted: var(--c3-ink-muted);
+  --color-line: var(--c3-line);
+  --color-line-strong: var(--c3-line-strong);
+
+  --color-pitch: var(--c3-pitch);
+  --color-pitch-surface: var(--c3-pitch-surface);
+  --color-pitch-elevated: var(--c3-pitch-elevated);
+  --color-pitch-ink: var(--c3-pitch-ink);
+  --color-pitch-muted: var(--c3-pitch-muted);
+  --color-pitch-line: var(--c3-pitch-line);
+
+  --color-volt: var(--c3-volt);
+  --color-volt-hover: var(--c3-volt-hover);
+  --color-volt-ink: var(--c3-volt-ink);
+  --color-turf: var(--c3-turf);
+  --color-turf-soft: var(--c3-turf-soft);
+  --color-turf-ink: var(--c3-turf-ink);
+  --color-turf-highlight: var(--c3-turf-highlight);
+  --color-alert: var(--c3-alert);
+  --color-alert-soft: var(--c3-alert-soft);
+  --color-warning: var(--c3-warning);
+  --color-warning-soft: var(--c3-warning-soft);
+}
+
+:root {
+  /* 60% Neutral Light Canvas */
+  --c3-canvas: #f5f7f4;
+  --c3-surface: #ffffff;
+  --c3-surface-muted: #ebefe8;
+
+  /* 30% Structural Inks & Hairline Borders */
+  --c3-ink: #0c1410;
+  --c3-ink-muted: #4b5951;
+  --c3-line: #dce2da;
+  --c3-line-strong: #b9c5b8;
+
+  /* Dark Stadium Surfaces (Hero, Complex Owners, Footer) */
+  --c3-pitch: #09100c;
+  --c3-pitch-surface: #111c16;
+  --c3-pitch-elevated: #18271f;
+  --c3-pitch-ink: #f4f7f4;
+  --c3-pitch-muted: #a6b7ad;
+  --c3-pitch-line: #23362b;
+
+  /* 10% High-Intent Floodlight Volt & Turf Accents */
+  --c3-volt: #c4f236;
+  --c3-volt-hover: #d3f85c;
+  --c3-volt-ink: #09100c;
+  --c3-turf: #156e39;
+  --c3-turf-soft: #e3f3e8;
+  --c3-turf-ink: #0f522a;
+  --c3-turf-highlight: #1f8a48;
+
+  /* Semantic States */
+  --c3-alert: #b91c1c;
+  --c3-alert-soft: #fef2f2;
+  --c3-warning: #92400e;
+  --c3-warning-soft: #fffbeb;
+
+  /* Scrims & Overlays */
+  --c3-scrim-top: rgba(9, 16, 12, 0.72);
+  --c3-scrim-mid: rgba(9, 16, 12, 0.56);
+  --c3-scrim-bottom: rgba(9, 16, 12, 0.92);
+  --c3-backdrop: rgba(9, 16, 12, 0.74);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: var(--c3-canvas);
+    color: var(--c3-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    overflow-x: hidden;
+    background-color: var(--c3-canvas);
+    color: var(--c3-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c3-turf);
+    outline-offset: 2px;
+  }
+}
+
+.dark-focus :focus-visible {
+  outline: 2px solid var(--c3-volt);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
