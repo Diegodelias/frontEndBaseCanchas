@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DemoBar } from '../components/auth/DemoBar';
 import { BookingModal } from '../components/modals/BookingModal';
 import { OwnerInquiryModal } from '../components/modals/OwnerInquiryModal';
@@ -18,12 +17,9 @@ import { PlayerBenefitsSection } from '../components/sections/PlayerBenefitsSect
 import { TestimonialsSection } from '../components/sections/TestimonialsSection';
 import { PLACEHOLDER_MODALS } from '../data/landingContent';
 import { MOCK_CITIES, MOCK_COMPLEXES } from '../data/mockComplexes';
-import { ROUTES } from '../routes/paths';
 import { Complex, PlaceholderModalInfo, SearchSelection } from '../types/canchas';
 
 export const LandingPage: React.FC = () => {
-  const navigate = useNavigate();
-
   const [selectedCityId, setSelectedCityId] = useState<string>(
     MOCK_CITIES[0]?.id ?? 'buenos-aires'
   );
@@ -87,7 +83,7 @@ export const LandingPage: React.FC = () => {
         {/* 2. Hero + Buscador en cascada integrado */}
         <HeroSearchSection
           activeCityName={activeCity?.name ?? 'Buenos Aires'}
-          onPrimaryCta={() => navigate(ROUTES.SEARCH)}
+          onPrimaryCta={() => scrollToElement('complejos')}
           onOwnerCta={() => setOwnerModalOpen(true)}
         />
 
@@ -110,10 +106,10 @@ export const LandingPage: React.FC = () => {
         />
 
         {/* 4. Cómo funciona */}
-        <HowItWorksSection onPrimaryCta={() => navigate(ROUTES.SEARCH)} />
+        <HowItWorksSection onPrimaryCta={() => scrollToElement('complejos')} />
 
         {/* 5. Beneficios para jugadores */}
-        <PlayerBenefitsSection onPrimaryCta={() => navigate(ROUTES.SEARCH)} />
+        <PlayerBenefitsSection onPrimaryCta={() => scrollToElement('complejos')} />
 
         {/* 6. Para complejos deportivos */}
         <ComplexOwnersSection onOpenOwnerModal={() => setOwnerModalOpen(true)} />
@@ -127,7 +123,7 @@ export const LandingPage: React.FC = () => {
 
       {/* 9. Final CTA y Footer */}
       <FinalCtaAndFooter
-        onFindCourtClick={() => navigate(ROUTES.SEARCH)}
+        onFindCourtClick={() => scrollToElement('complejos')}
         onOwnerClick={() => setOwnerModalOpen(true)}
         onPlaceholderClick={(key) =>
           setPlaceholderModal(PLACEHOLDER_MODALS[key])

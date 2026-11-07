@@ -20,7 +20,7 @@ export const FinalCtaAndFooter: React.FC<FinalCtaAndFooterProps> = ({
       {/* Final Conversion CTA Band */}
       <section className="py-16 sm:py-20 bg-canvas">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-surface border border-line rounded-2xl p-8 sm:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="bg-surface border border-line rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-turf-ink">
                 Armá el próximo partido
@@ -34,11 +34,21 @@ export const FinalCtaAndFooter: React.FC<FinalCtaAndFooterProps> = ({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <Button variant="volt" size="lg" onClick={onFindCourtClick}>
+            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center lg:items-stretch xl:items-center gap-3 shrink-0">
+              <Button
+                variant="volt"
+                size="lg"
+                className="w-full sm:w-auto lg:w-full xl:w-auto"
+                onClick={onFindCourtClick}
+              >
                 Encontrá tu próxima cancha
               </Button>
-              <Button variant="secondary" size="lg" onClick={onOwnerClick}>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full sm:w-auto lg:w-full xl:w-auto"
+                onClick={onOwnerClick}
+              >
                 Soy dueño de un complejo
               </Button>
             </div>

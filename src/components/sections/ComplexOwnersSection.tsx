@@ -45,13 +45,19 @@ export const ComplexOwnersSection: React.FC<ComplexOwnersSectionProps> = ({
               {OWNER_SECTION_COPY.description}
             </p>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Button variant="volt" size="lg" onClick={onOpenOwnerModal}>
+            <div className="mt-7 flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center lg:items-stretch xl:items-center gap-3">
+              <Button
+                variant="volt"
+                size="lg"
+                className="w-full sm:w-auto lg:w-full xl:w-auto"
+                onClick={onOpenOwnerModal}
+              >
                 {OWNER_SECTION_COPY.ctaLabel}
               </Button>
               <Button
                 variant="darkSecondary"
                 size="lg"
+                className="w-full sm:w-auto lg:w-full xl:w-auto"
                 onClick={onOpenOwnerModal}
               >
                 {OWNER_SECTION_COPY.secondaryLabel}

@@ -109,11 +109,21 @@ export const HeroSearchSection: React.FC<HeroSearchSectionProps> = ({
             {HERO_COPY.subtitle}
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button variant="volt" size="lg" onClick={onPrimaryCta}>
+          <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <Button
+              variant="volt"
+              size="lg"
+              className="w-full sm:w-auto"
+              onClick={onPrimaryCta}
+            >
               {HERO_COPY.primaryCta}
             </Button>
-            <Button variant="darkSecondary" size="lg" onClick={onOwnerCta}>
+            <Button
+              variant="darkSecondary"
+              size="lg"
+              className="w-full sm:w-auto"
+              onClick={onOwnerCta}
+            >
               {HERO_COPY.secondaryCta}
             </Button>
           </div>
